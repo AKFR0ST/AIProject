@@ -1,7 +1,6 @@
 package com.sb1.clients;
 
 import com.sb1.enums.NNServices;
-import com.sb1.handlers.TgMessageHandler;
 import com.sb1.interfaces.SendRequestImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +28,6 @@ import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
 @Component
 public class CatBotAbility extends AbilityBot {
 
-    private final TgMessageHandler tgMessageHandler;
     @Autowired
     private SendRequestImpl sendRequestImpl;
 
@@ -37,7 +35,6 @@ public class CatBotAbility extends AbilityBot {
                          @Value("${telegramm.bot.token}") String botToken
     ) {
         super(botToken, botName);
-        this.tgMessageHandler = new TgMessageHandler(silent, botName, botToken);
     }
 
     @Override
@@ -52,30 +49,30 @@ public class CatBotAbility extends AbilityBot {
                 .info("Starts the bot")
                 .locality(USER)
                 .privacy(PUBLIC)
-                .action(context -> tgMessageHandler.replyToStart(context.chatId()))
+                .action(ctx -> silent.send("Hi!", ctx.chatId()))
                 .build();
     }
 
     public Ability photoSize() {
         return Ability
                 .builder()
-                .name(DEFAULT)              // Название команды
-                .info("Показывает размер полученной фотографии.")  // Описание команды
+                .name(DEFAULT)              // Не указываем команду
+                .info("Показывает размер полученной фотографии.")
                 .flag(PHOTO)
-                .locality(USER)           // Локальность — пользовательская команда
-                .privacy(PUBLIC)           // Доступность — публичная
+                .locality(USER)
+                .privacy(PUBLIC)
                 .input(0)
                 .action(ctx -> {
                     Message msg = ctx.update().getMessage();
                     if (msg.hasPhoto()) {
                         try {
                             byte[] image = getByteArray(ctx.update());
-                            silent.send("Оценка котику: " + sendRequestImpl.sendImageToTextRequest("Ты специалист по котикам", "Оцени кота по шкале от 1 до 100", image, NNServices.GIGA_CHAT), ctx.chatId());
+                            silent.send("Оценка котику: " + sendRequestImpl.sendImageToTextRequest("Ты специалист по котикам", "Оцени кота по шкале от 1 до 100", image, NNServices.GIGA_CHAT), ctx.chatId());  //  Тут бросаем запрос в кафку
                         } catch (TelegramApiException e) {
                             silent.send("Ошибка при получении файла: " + e.getMessage(), ctx.chatId());
                         }
                     } else {
-                        silent.send("Отправьте мне фотографию.", ctx.chatId());
+                        silent.send("Отправьте фотографию кота.", ctx.chatId());
                     }
                 })
                 .build();
