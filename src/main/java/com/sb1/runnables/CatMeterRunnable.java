@@ -20,6 +20,11 @@ public class CatMeterRunnable implements Runnable{
 
         while(true){
 //            String incomingRequest = tgClient.getUp
+            //  Вычитываем из входящего топика сообщения
+
+            //  Передаем сообщения в импл ГЧата
+
+            //  Ответ передаем в исходящий топик
 
         }
     }
