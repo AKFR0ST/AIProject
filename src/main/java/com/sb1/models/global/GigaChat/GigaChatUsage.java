@@ -1,4 +1,4 @@
-package com.sb1.models.GigaChat;
+package com.sb1.models.global.GigaChat;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

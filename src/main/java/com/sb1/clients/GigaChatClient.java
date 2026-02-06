@@ -1,6 +1,6 @@
 package com.sb1.clients;
 
-import com.sb1.models.GigaChat.*;
+import com.sb1.models.global.GigaChat.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
