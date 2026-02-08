@@ -1,6 +1,6 @@
 package com.sb1.clients;
 
-import com.sb1.enums.NNServices;
+import com.sb1.enums.LLMServices;
 import com.sb1.interfaces.SendRequestImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,7 +67,7 @@ public class CatBotAbility extends AbilityBot {
                     if (msg.hasPhoto()) {
                         try {
                             byte[] image = getByteArray(ctx.update());
-                            silent.send("Оценка котику: " + sendRequestImpl.sendImageToTextRequest("Ты специалист по котикам", "Оцени кота по шкале от 1 до 100", image, NNServices.GIGA_CHAT), ctx.chatId());  //  Тут бросаем запрос в кафку
+                            silent.send("Оценка котику: " + sendRequestImpl.sendImageToTextRequest("Ты специалист по котикам", "Оцени кота по шкале от 1 до 100", image, LLMServices.GIGA_CHAT), ctx.chatId());  //  Тут бросаем запрос в кафку
                         } catch (TelegramApiException e) {
                             silent.send("Ошибка при получении файла: " + e.getMessage(), ctx.chatId());
                         }

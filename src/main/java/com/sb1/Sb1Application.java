@@ -2,6 +2,7 @@ package com.sb1;
 
 import com.sb1.clients.GigaChatClient;
 import com.sb1.clients.CatBotAbility;
+import com.sb1.clients.LocalClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -18,14 +19,19 @@ public class Sb1Application {
     public static void main(String[] args) throws IOException {
         ApplicationContext context = SpringApplication.run(Sb1Application.class, args);
 //        SendRequestImpl sendRequestImpl = context.getBean(SendRequestImpl.class);
-        GigaChatClient gigaChatClient = context.getBean(GigaChatClient.class);
+//        GigaChatClient gigaChatClient = context.getBean(GigaChatClient.class);
+        LocalClient localClient = context.getBean(LocalClient.class);
 
-        try {
-            TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-            botsApi.registerBot(context.getBean(CatBotAbility.class));
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
+        String resp = localClient.localTextToTextRequest("Two add two is?");
+        System.out.println(resp);
+
+
+//        try {
+//            TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
+//            botsApi.registerBot(context.getBean(CatBotAbility.class));
+//        } catch (TelegramApiException e) {
+//            throw new RuntimeException(e);
+//        }
 //        gigaChatClient.printToken();
 //        byte[] byteArray = Files.readAllBytes(Paths.get("C:/122.bmp"));
 //        System.out.println("Размер(byte): " + byteArray.length);

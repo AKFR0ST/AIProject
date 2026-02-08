@@ -41,7 +41,7 @@ public class GigaChatClient {
         this.authUrl = authUrl;
         this.baseUrl = baseUrl;
         this.filesUrl = filesUrl;
-        System.out.println(authUrl);
+//        System.out.println(authUrl);
 
         updateAuthClient();
         updateBaseClient();
