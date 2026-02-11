@@ -1,4 +1,4 @@
-package com.sb1.runnables;
+package com.sb1.agents;
 
 import com.sb1.clients.CatBotAbility;
 import com.sb1.interfaces.SendRequestImpl;
@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CatMeterRunnable implements Runnable{
+public class CatMeterAgent implements Runnable{  // Переименовать в агенты?
 
     @Autowired
     SendRequestImpl sendRequest;

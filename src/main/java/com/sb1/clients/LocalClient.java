@@ -23,21 +23,13 @@ public class LocalClient {
     private int port;
     private String baseUrl;
 
-    private RestClient restClient;
+    WebClient webClient;
 
     private void updateClient(){
-        restClient = RestClient.builder()
-                .baseUrl("http://127.0.0.1:1234/v1")
-//                .requestFactory(
-//                        HttpComponentsClientHttpRequestFactoryBuilder.create()
-//                                .setConnectTimeout(Duration.ofSeconds(5))
-//                                .setReadTimeout(Duration.ofSeconds(30))
-//                                .build()
-//                )
+        webClient = WebClient.builder()
+                .baseUrl("http://127.0.0.1:1234/")
                 .defaultHeader(CONTENT_TYPE, APPLICATION_JSON)
-//                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(ACCEPT, APPLICATION_JSON)
-                .defaultHeader("Connection", "close")
                 .defaultHeader(AUTHORIZATION, BEARER + "sk-lm-9NrfMXYn:Xky2oGpbc5y0eABn1lHg")
                 .build();
     }
@@ -50,39 +42,20 @@ public class LocalClient {
                 .build();
 
         updateClient();
-        String response = null;
+        LocalResponse response = null;
     try {
-        WebClient webClient = WebClient.builder()
-            .baseUrl("http://127.0.0.1:1234")
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-            .build();
-
-        String raw = webClient.post()
+        response = webClient.post()
                 .uri("/api/v1/chat")
                 .bodyValue(localRequest)
                 .retrieve()
-                .bodyToMono(String.class)
+                .bodyToMono(LocalResponse.class)
                 .block(Duration.ofSeconds(60));
 
-        System.out.println(raw);
-//        response = restClient.post()
-//                .uri("/chat")
-//                .body(localRequest)
-//                .retrieve()
-//                .body(String.class);
-
-//        String raw = restClient.post()
-//                .body(localRequest)
-//                .retrieve()
-//                .body(String.class);
-//
-//        System.out.println(raw);
 
         System.out.println(response);
     } catch (RestClientException e) {
         e.printStackTrace();
     }
-        return response.toString();
+        return response.getOutput().getFirst().getMessage().getContent();
     }
 }
