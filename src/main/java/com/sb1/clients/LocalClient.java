@@ -2,13 +2,9 @@ package com.sb1.clients;
 
 import com.sb1.models.local.GPT.OSS20B.LocalRequest;
 import com.sb1.models.local.GPT.OSS20B.LocalResponse;
-import org.apache.http.HttpHost;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
@@ -18,19 +14,27 @@ import static com.sb1.constants.GigaChatConstants.BEARER;
 
 @Component
 public class LocalClient {
+    private final String baseUrl;
+    private final String bearerToken;
 
-    private String host;
-    private int port;
-    private String baseUrl;
+    public LocalClient(
+            @Value("local.base.url") String baseUrl,
+            @Value("local.bearer.token")String bearerToken
+    ){
+        this.baseUrl = baseUrl;
+        this.bearerToken = bearerToken;
+    }
 
     WebClient webClient;
 
-    private void updateClient(){
+    private void updateClient(
+
+    ){
         webClient = WebClient.builder()
-                .baseUrl("http://127.0.0.1:1234/")
+                .baseUrl(baseUrl)
                 .defaultHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .defaultHeader(ACCEPT, APPLICATION_JSON)
-                .defaultHeader(AUTHORIZATION, BEARER + "sk-lm-9NrfMXYn:Xky2oGpbc5y0eABn1lHg")
+                .defaultHeader(AUTHORIZATION, BEARER + bearerToken)
                 .build();
     }
 
@@ -45,7 +49,6 @@ public class LocalClient {
         LocalResponse response = null;
     try {
         response = webClient.post()
-                .uri("/api/v1/chat")
                 .bodyValue(localRequest)
                 .retrieve()
                 .bodyToMono(LocalResponse.class)
