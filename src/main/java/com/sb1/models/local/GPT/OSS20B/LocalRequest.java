@@ -13,5 +13,7 @@ public class LocalRequest {
     private String input;
     @JsonProperty("stream")
     private Boolean stream;
+    @JsonProperty("system_prompt")
+    private String systemPrompt;
 //    private ArrayList<LocalInput> input;
 }

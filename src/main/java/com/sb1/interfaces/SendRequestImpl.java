@@ -20,7 +20,7 @@ public class SendRequestImpl implements SendRequest {
     public String sendTextToTextRequest(String role, String text, LLMServices nnService) {
         switch (nnService) {
             case GIGA_CHAT : return gigaChatAPIService.textToTextRequest(role, text);
-            case GPT_OSS20B: return localAPIService.textToTextRequest(text);
+            case GPT_OSS20B: return localAPIService.textToTextRequest(role, text);
 
             default: return MODEL_INCORRECT;
         }

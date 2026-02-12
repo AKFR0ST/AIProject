@@ -22,7 +22,7 @@ public class Sb1Application {
 //        GigaChatClient gigaChatClient = context.getBean(GigaChatClient.class);
         LocalClient localClient = context.getBean(LocalClient.class);
 
-        String resp = localClient.localTextToTextRequest("Two add two is?");
+        String resp = localClient.localTextToTextRequest("Отвечай как двоечник", "Сколько будет два плюс два?");
         System.out.println(resp);
 
 

@@ -9,7 +9,7 @@ public class LocalAPIService {
     @Autowired
     LocalClient localClient;
 
-    public String textToTextRequest(String text){
-        return localClient.localTextToTextRequest(text);
+    public String textToTextRequest(String prompt, String text){
+        return localClient.localTextToTextRequest(prompt, text);
     }
 }

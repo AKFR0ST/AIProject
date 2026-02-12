@@ -18,8 +18,8 @@ public class LocalClient {
     private final String bearerToken;
 
     public LocalClient(
-            @Value("local.base.url") String baseUrl,
-            @Value("local.bearer.token")String bearerToken
+            @Value("${local.base.url}") String baseUrl,
+            @Value("${local.bearer.token}")String bearerToken
     ){
         this.baseUrl = baseUrl;
         this.bearerToken = bearerToken;
@@ -38,10 +38,11 @@ public class LocalClient {
                 .build();
     }
 
-    public String localTextToTextRequest(String textOfRequest){
+    public String localTextToTextRequest(String prompt, String textOfRequest){
         LocalRequest localRequest = LocalRequest.builder()
                 .model("openai/gpt-oss-20b")
                 .input(textOfRequest)
+                .systemPrompt(prompt)
                 .stream(false)
                 .build();
 
@@ -59,6 +60,6 @@ public class LocalClient {
     } catch (RestClientException e) {
         e.printStackTrace();
     }
-        return response.getOutput().getFirst().getMessage().getContent();
+        return response.getOutput().get(1).getContent();
     }
 }
