@@ -15,7 +15,7 @@ import java.util.UUID;
 
 import static com.sb1.constants.GigaChatConstants.*;
 import static com.sb1.enums.GigaChatModels.GIGACHAT_2_MAX;
-import static org.apache.tomcat.util.http.fileupload.FileUploadBase.MULTIPART_FORM_DATA;
+import static jakarta.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 @Component
 public class GigaChatClient {

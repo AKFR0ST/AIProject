@@ -5,25 +5,31 @@ import com.sb1.clients.CatBotAbility;
 import com.sb1.clients.LocalClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.io.IOException;
 
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class })
+@EnableScheduling
+@SpringBootApplication
+//@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class })
 public class Sb1Application {
 
     public static void main(String[] args) throws IOException {
         ApplicationContext context = SpringApplication.run(Sb1Application.class, args);
+    }}
 //        SendRequestImpl sendRequestImpl = context.getBean(SendRequestImpl.class);
 //        GigaChatClient gigaChatClient = context.getBean(GigaChatClient.class);
-        LocalClient localClient = context.getBean(LocalClient.class);
+//        LocalClient localClient = context.getBean(LocalClient.class);
 
-        String resp = localClient.localTextToTextRequest("Отвечай как двоечник", "Сколько будет два плюс два?");
-        System.out.println(resp);
+//        String resp = localClient.localTextToTextRequest("Отвечай как двоечник", "Сколько будет два плюс два?");
+//        System.out.println(resp);
 
 
 //        try {
@@ -40,6 +46,6 @@ public class Sb1Application {
 ////        System.out.print(sendRequestImpl.sendTextToTextRequest("Ответь как специалист по котам", "Сколько мышей может поймать кот за декаду. Ответ должен содержать только одно число. В ответе не должно быть текста или любых пояснений.", NNServices.GIGA_CHAT));
 ////                System.out.print(gigaChatClient.gigaChatTextToTextRequest("Ответь как специалист по котам", "Сколько мышей может поймать кот за декаду. Ответ должен содержать только одно число. В ответе не должно быть текста или любых пояснений."));
 
-    }
-
-}
+//    }
+//
+//}
