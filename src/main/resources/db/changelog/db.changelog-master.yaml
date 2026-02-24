@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-vacancies-table
+      author: developer
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            schemaName: public
+            tableName: vacancies
+      changes:
+        - createTable:
+            tableName: vacancies
+            columns:
+              - column:
+                  name: hh_id
+                  type: VARCHAR(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  name: employer
+                  type: VARCHAR(255)
+              - column:
+                  name: url
+                  type: VARCHAR(255)
+              - column:
+                  name: salary_from
+                  type: INTEGER
+              - column:
+                  name: salary_to
+                  type: INTEGER
+              - column:
+                  name: published_at
+                  type: VARCHAR(255)

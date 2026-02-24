@@ -1,12 +1,18 @@
 package com.sb1.models.hh;
 
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+//import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
+//import org.springframework.data.relational.core.mapping.Table;
+//import org.springframework.data.relational.core.mapping.Table;
 
-@Table(name = "vacancies")
+//@Table(name = "vacancies")
 @Data
+@Entity
+@Table(name = "vacancies")
 public class Vacancy {
 
     @Id
