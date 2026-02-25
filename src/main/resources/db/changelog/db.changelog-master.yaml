@@ -13,11 +13,17 @@ databaseChangeLog:
             tableName: vacancies
             columns:
               - column:
-                  name: hh_id
-                  type: VARCHAR(255)
+                  name: id
+                  type: BIGSERIAL
                   constraints:
                     primaryKey: true
                     nullable: false
+              - column:
+                  name: hh_id
+                  type: VARCHAR(255)
+              - column:
+                  name: status
+                  type: VARCHAR(255)
               - column:
                   name: name
                   type: VARCHAR(255)
@@ -25,7 +31,16 @@ databaseChangeLog:
                   name: employer
                   type: VARCHAR(255)
               - column:
+                  name: description
+                  type: VARCHAR(255)
+              - column:
                   name: url
+                  type: VARCHAR(255)
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+              - column:
+                  name: contact_name
                   type: VARCHAR(255)
               - column:
                   name: salary_from

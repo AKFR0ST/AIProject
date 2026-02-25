@@ -1,10 +1,12 @@
 package com.sb1.clients;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.springframework.stereotype.Service;
+import com.sb1.dto.HhResponseDto;
+import com.sb1.dto.HhVacancyDetailDto;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-@Service
+@Component
 public class HhClient {
 
     private final WebClient webClient;
@@ -16,7 +18,7 @@ public class HhClient {
                 .build();
     }
 
-    public JsonNode search(String text, String area, int perPage) {
+    public HhResponseDto searchNewVacancies(String text, String area, int perPage) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/vacancies")
@@ -25,7 +27,18 @@ public class HhClient {
                         .queryParam("per_page", perPage)
                         .build())
                 .retrieve()
-                .bodyToMono(JsonNode.class)
+                .bodyToMono(HhResponseDto.class)
+                .block();
+    }
+
+    public HhVacancyDetailDto getVacancyById(String vacancyId) {
+
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/vacancies/{id}")
+                        .build(vacancyId))
+                .retrieve()
+                .bodyToMono(HhVacancyDetailDto.class)
                 .block();
     }
 }
