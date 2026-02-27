@@ -13,8 +13,8 @@ public class KafkaTopic {
         return TopicBuilder.name("topic-1").build();
     }
 
-    @Bean
-    public NewTopic topic2() {
-        return TopicBuilder.name("topic-2").partitions(3).build();
-    }
+//    @Bean
+//    public NewTopic topic2() {
+//        return TopicBuilder.name("topic-2").partitions(3).build();
+//    }
 }

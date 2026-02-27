@@ -35,6 +35,4 @@ public class Vacancy {
     private Integer salaryTo;
     @Column(name = "published_at")
     private String publishedAt;
-
-    // getters/setters
 }

@@ -4,6 +4,7 @@ import com.sb1.clients.HhClient;
 import com.sb1.dto.HhResponseDto;
 import com.sb1.dto.HhVacancyDetailDto;
 import com.sb1.dto.HhVacancyDto;
+import com.sb1.enums.VacancyStatus;
 import com.sb1.mappers.VacancyMapper;
 import com.sb1.models.hh.Vacancy;
 import com.sb1.repositories.VacancyRepository;
@@ -15,6 +16,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -22,7 +25,7 @@ public class VacancyService {
 
     private final HhClient hhClient;
     private final VacancyRepository repository;
-    private final KafkaTemplate<String, Vacancy> kafkaTemplate;
+    private final KafkaTemplate<String, Long> kafkaTemplate;
 
     @Autowired
     private VacancyMapper vacancyMapper;
@@ -41,7 +44,7 @@ public class VacancyService {
 
         HhResponseDto responseDto = hhClient.searchNewVacancies(text, area, perPage);
 
-        if (responseDto == null || responseDto.getItems() == null) {
+        if (Objects.isNull(responseDto) || Objects.isNull(responseDto.getItems())) {
             return;
         }
 
@@ -51,19 +54,16 @@ public class VacancyService {
 
                 Vacancy vacancy = vacancyMapper.toEntity(dto);
                 repository.save(vacancy);
+                log.info("NEW vacancy with id {} saved: {}", vacancy.getId(), vacancy.getName());
 
-                //  TODO Send to kafka
-                kafkaTemplate.send("topic-1", vacancy.getId().toString(), vacancy)
+                kafkaTemplate.send("topic-1", vacancy.getId())
                         .whenComplete((result, ex) -> {
-                            if (ex == null) {
+                            if (Objects.isNull(ex)) {
                                 log.info("Message sent to Kafka for vacancy {}", vacancy.getId());
                             } else {
                                 log.error("Failed to send message for vacancy {}", vacancy.getId(), ex);
                             }
                         });
-
-                log.info("NEW vacancy with id {} saved: {}", vacancy.getId(), vacancy.getName());
-//                enrichmentVacancy(vacancy.getId());
             }
         }
     }
@@ -76,7 +76,10 @@ public class VacancyService {
 
         vacancyMapper.updateFromDetail(detail, vacancy);
 
+        vacancy.setStatus(VacancyStatus.DETAILED);
+
         repository.save(vacancy);
-        log.info("Vacancy with id {} detalized: {}", vacancy.getId(), vacancy.getName());
+
+        log.info("Vacancy with id {} detailed: {}", vacancy.getId(), vacancy.getName());
     }
 }

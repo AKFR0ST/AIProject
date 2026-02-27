@@ -30,6 +30,7 @@ public interface VacancyMapper {
     @Mapping(target = "email", source = "contacts.email")
     @Mapping(target = "salaryFrom", source = "salary.from")
     @Mapping(target = "salaryTo", source = "salary.to")
+    @Mapping(target = "description", source = "description")
     void updateFromDetail(HhVacancyDetailDto dto, @MappingTarget Vacancy vacancy);
 }
 

@@ -13,8 +13,8 @@ public class VacancyEnrichmentConsumer {
     private final VacancyService vacancyService;
 
     @KafkaListener(topics = "topic-1", groupId = "vacancy-group")
-    public void listen(String vacancyId) {
+    public void listen(Long vacancyId) {
         log.info("Received vacancy id {} for enrichment", vacancyId);
-        vacancyService.enrichmentVacancy(Long.valueOf(vacancyId));
+        vacancyService.enrichmentVacancy(vacancyId);
     }
 }
