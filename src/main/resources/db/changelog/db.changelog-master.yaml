@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: create-vacancies-table
-      author: developer
+      author: frost
       preConditions:
         onFail: MARK_RAN
         not:
@@ -51,3 +51,54 @@ databaseChangeLog:
               - column:
                   name: published_at
                   type: VARCHAR(255)
+              - column:
+                  name: cover_letter
+                  type: TEXT
+  - changeSet:
+      id: create-resumes-table
+      author: frost
+      changes:
+        - createTable:
+            tableName: resumes
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+              - column:
+                  name: phone
+                  type: varchar(20)
+              - column:
+                  name: city
+                  type: varchar(255)
+              - column:
+                  name: profession
+                  type: varchar(1000)
+              - column:
+                  name: skills
+                  type: TEXT
+              - column:
+                  name: experience
+                  type: TEXT
+              - column:
+                  name: education
+                  type: TEXT
+              - column:
+                  name: languages
+                  type: TEXT
+              - column:
+                  name: attachment
+                  type: BYTEA
+              - column:
+                  name: attachment_name
+                  type: varchar(255)

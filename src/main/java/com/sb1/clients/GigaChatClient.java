@@ -32,7 +32,7 @@ public class GigaChatClient {
 
     public GigaChatClient(
             @Value("${gigachat.auth.url}") String authUrl,
-            @Value("${gigachat.autorization.key}") String authKey,
+            @Value("${gigachat.authorization.key}") String authKey,
             @Value("${gigachat.base.url}") String baseUrl,
             @Value("${gigachat.files.url}") String filesUrl
 
@@ -166,10 +166,10 @@ public class GigaChatClient {
         return gigaChatBaseResponse.getGigaChatChoices().getFirst().getRequestMessage().getContent();
     }
 
-    public void printToken() {
-        updateToken();
-        System.out.println("GigaChat token: " + token);
-    }
+//    public void printToken() {
+//        updateToken();
+//        System.out.println("GigaChat token: " + token);
+//    }
 
     private void updateToken() {
         GigaChatResponseToken result = authRestClient.post().body(SCOPE_GIGACHAT_API_PERS).retrieve().body(GigaChatResponseToken.class);

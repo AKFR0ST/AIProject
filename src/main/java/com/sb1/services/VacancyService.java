@@ -1,12 +1,15 @@
 package com.sb1.services;
 
+import com.sb1.clients.GigaChatClient;
 import com.sb1.clients.HhClient;
 import com.sb1.dto.HhResponseDto;
 import com.sb1.dto.HhVacancyDetailDto;
 import com.sb1.dto.HhVacancyDto;
 import com.sb1.enums.VacancyStatus;
 import com.sb1.mappers.VacancyMapper;
+import com.sb1.models.hh.Resume;
 import com.sb1.models.hh.Vacancy;
+import com.sb1.repositories.ResumeRepository;
 import com.sb1.repositories.VacancyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +27,10 @@ import java.util.Objects;
 public class VacancyService {
 
     private final HhClient hhClient;
-    private final VacancyRepository repository;
+    private final VacancyRepository vacancyRepository;
+    private final ResumeRepository resumeRepository;
     private final KafkaTemplate<String, Long> kafkaTemplate;
+    private final GigaChatClient gigaChatClient;
 
     @Autowired
     private VacancyMapper vacancyMapper;
@@ -50,16 +55,16 @@ public class VacancyService {
 
         for (HhVacancyDto dto : responseDto.getItems()) {
 
-            if (!repository.existsById(dto.getId())) {
+            if (!vacancyRepository.existsById(dto.getId())) {
 
                 Vacancy vacancy = vacancyMapper.toEntity(dto);
-                repository.save(vacancy);
+                vacancyRepository.save(vacancy);
                 log.info("NEW vacancy with id {} saved: {}", vacancy.getId(), vacancy.getName());
 
                 kafkaTemplate.send("topic-1", vacancy.getId())
                         .whenComplete((result, ex) -> {
                             if (Objects.isNull(ex)) {
-                                log.info("Message sent to Kafka for vacancy {}", vacancy.getId());
+                                log.info("New vacancy message sent to Kafka for vacancy {}", vacancy.getId());
                             } else {
                                 log.error("Failed to send message for vacancy {}", vacancy.getId(), ex);
                             }
@@ -69,7 +74,7 @@ public class VacancyService {
     }
 
     public void enrichmentVacancy(Long id){
-        Vacancy vacancy = repository.findById(String.valueOf(id))
+        Vacancy vacancy = vacancyRepository.findById(String.valueOf(id))
                 .orElseThrow();
 
         HhVacancyDetailDto detail = hhClient.getVacancyById(vacancy.getHhId());
@@ -78,8 +83,32 @@ public class VacancyService {
 
         vacancy.setStatus(VacancyStatus.DETAILED);
 
-        repository.save(vacancy);
+        vacancyRepository.save(vacancy);
 
         log.info("Vacancy with id {} detailed: {}", vacancy.getId(), vacancy.getName());
+
+        kafkaTemplate.send("topic-2", vacancy.getId())
+                .whenComplete((result, ex) -> {
+                    if (Objects.isNull(ex)) {
+                        log.info("Message with status {} sent to Kafka for vacancy {}", vacancy.getStatus(), vacancy.getId());
+                    } else {
+                        log.error("Failed to send message for vacancy {}", vacancy.getId(), ex);
+                    }
+                });
     }
+
+    public void createCoverLetter(Long id) {
+        Vacancy vacancy = vacancyRepository.findById(String.valueOf(id))
+                .orElseThrow();
+
+        //  Получить резюме
+        Resume resume = resumeRepository.findById(id).orElseThrow();
+
+
+        //  Передать в ЛЛМ и записать ответ в базу
+        String coverLetter = gigaChatClient.gigaChatTextToTextRequest("Профессиональный рекрутер", "Подготовь короткое сопроводительное письмо на следующую вакансию: " + vacancy.toString() + "Под это резюме" + resume.toString());
+
+
+    }
+
 }
