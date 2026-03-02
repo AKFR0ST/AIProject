@@ -2,7 +2,6 @@ package com.sb1.models.hh;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 
 @Entity
 @Table(name = "resumes")
@@ -11,6 +10,7 @@ public class Resume {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(length = 500)
@@ -28,22 +28,22 @@ public class Resume {
     @Column(length = 1000)
     private String profession;       // Позиция/специализация
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String skills;           // Краткий список навыков (текст, может быть JSON)
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String experience;       // Опыт работы (текст / структурированно JSON)
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String education;        // Образование (текст / структурированно JSON)
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String languages;        // Языки (текст / JSON)
 
-    @Lob
+    @Column(name = "attachment", columnDefinition = "bytea")
     private byte[] attachment; // здесь будет pdf / docx файл для письма
 
-    @Column(length = 255)
+    @Column(length = 255, name = "attachment_name")
     private String attachmentName; // имя файла (resume.pdf)
 
 }

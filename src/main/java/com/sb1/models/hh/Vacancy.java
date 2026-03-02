@@ -36,5 +36,6 @@ public class Vacancy {
     @Column(name = "published_at")
     private String publishedAt;
     @Lob
+    @Column(name = "cover_letter")
     private String coverLetter;
 }

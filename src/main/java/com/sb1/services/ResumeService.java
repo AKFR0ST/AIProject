@@ -25,14 +25,12 @@ public class ResumeService {
     private final ResumeMapper resumeMapper;
 
     @Transactional
-    public Resume addNewResume(MultipartFile file) throws IOException {
+    public void addNewResume(MultipartFile file) throws IOException {
 
         log.info("Start processing resume file: {}", file.getOriginalFilename());
 
-        // 1. Извлекаем текст
         String text = fileParserService.extractText(file);
 
-        // 2. Отправляем в LLM
         String responseFromLlm = llmClient.gigaChatTextToTextRequest("Ты HR-система, которая извлекает структурированные данные из резюме", "Проанализируй текст резюме и верни строго JSON в формате:\n" +
                 "\n" +
                 "{\n" +
@@ -47,24 +45,20 @@ public class ResumeService {
                 "  \"languages\": \"\"\n" +
                 "}\n" +
                 "\n" +
-                "Верни ТОЛЬКО валидный JSON. Без комментариев. Без пояснений. " + text);
+                "Верни ТОЛЬКО валидный JSON. Не используй массивы. Без комментариев. Без пояснений. " + text);
 
         ResumeLlmDto resumeLlmDto = resumeLlmParser.parse(responseFromLlm);
 
 
-        // 3. Мапим в entity
         Resume resume = resumeMapper.fromLlmDto(resumeLlmDto);
 
-        // 4. Сохраняем файл
         resume.setAttachment(file.getBytes());
         resume.setAttachmentName(file.getOriginalFilename());
 
-        // 5. Сохраняем в БД
         Resume saved = resumeRepository.save(resume);
 
         log.info("Resume saved with id {}", saved.getId());
 
-        return saved;
     }
 
 }
