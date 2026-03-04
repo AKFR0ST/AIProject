@@ -1,7 +1,7 @@
 package com.sb1.agents;
 
 import com.sb1.clients.CatBotAbility;
-import com.sb1.interfaces.SendRequestImpl;
+import com.sb1.interfaces.LLMInterfaceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class CatMeterAgent implements Runnable{  // Переименовать в агенты?
 
     @Autowired
-    SendRequestImpl sendRequest;
+    LLMInterfaceImpl sendRequest;
 
     @Autowired
     CatBotAbility catBotAbility;

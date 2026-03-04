@@ -22,7 +22,7 @@ public class Vacancy {
     private VacancyStatus status;
     private String name;
     private String employer;
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
     private String url;
     @Column(name = "email")
@@ -35,7 +35,6 @@ public class Vacancy {
     private Integer salaryTo;
     @Column(name = "published_at")
     private String publishedAt;
-    @Lob
-    @Column(name = "cover_letter")
+    @Column(name = "cover_letter", columnDefinition = "TEXT")
     private String coverLetter;
 }

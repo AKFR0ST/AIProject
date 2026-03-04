@@ -18,12 +18,15 @@ public class HhClient {
                 .build();
     }
 
-    public HhResponseDto searchNewVacancies(String text, String area, int perPage) {
+    public HhResponseDto searchNewVacancies(String text, String area, int codeOfRole, String experience, String ordering, int perPage) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/vacancies")
                         .queryParam("text", text)
                         .queryParam("area", area)
+                        .queryParam("professional_role", codeOfRole)
+                        .queryParam("experience", experience)
+                        .queryParam("order_by", ordering)
                         .queryParam("per_page", perPage)
                         .build())
                 .retrieve()

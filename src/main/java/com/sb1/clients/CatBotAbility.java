@@ -1,7 +1,7 @@
 package com.sb1.clients;
 
 import com.sb1.enums.LLMServices;
-import com.sb1.interfaces.SendRequestImpl;
+import com.sb1.interfaces.LLMInterfaceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,7 +29,7 @@ import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
 public class CatBotAbility extends AbilityBot {
 
     @Autowired
-    private SendRequestImpl sendRequestImpl;
+    private LLMInterfaceImpl sendRequestImpl;
 
     public CatBotAbility(@Value("${telegramm.bot.name}") String botName,
                          @Value("${telegramm.bot.token}") String botToken

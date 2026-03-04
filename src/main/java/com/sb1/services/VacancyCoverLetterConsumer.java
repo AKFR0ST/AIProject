@@ -12,9 +12,10 @@ public class VacancyCoverLetterConsumer {
 
     private final VacancyService vacancyService;
 
-    @KafkaListener(topics = "topic-2", groupId = "vacancy-group")
+    @KafkaListener(topics = "topic-3", groupId = "vacancy-group")
     public void listen(Long vacancyId) {
         log.info("Received vacancy id {} for creating cover letter", vacancyId);
         vacancyService.createCoverLetter(vacancyId);
+        //  TODO Отправка запроса в бот для принятия решения об отправке если отправлять, то mail sender, если нет, то статус cancel.
     }
 }

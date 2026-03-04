@@ -1,11 +1,17 @@
 package com.sb1.models.hh;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "resumes")
-@Data
+@Getter
+@Setter
+@ToString(exclude = "attachment")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Resume {
 
     @Id

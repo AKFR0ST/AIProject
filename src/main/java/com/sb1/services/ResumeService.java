@@ -1,17 +1,22 @@
 package com.sb1.services;
 
-import com.sb1.clients.GigaChatClient;
 import com.sb1.dto.ResumeLlmDto;
+import com.sb1.enums.LLMServices;
+import com.sb1.interfaces.LLMInterfaceImpl;
 import com.sb1.mappers.ResumeMapper;
 import com.sb1.models.hh.Resume;
 import com.sb1.repositories.ResumeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+
+import static com.sb1.enums.LLMServices.GIGA_CHAT;
+import static com.sb1.enums.LLMServices.GPT_OSS20B;
 
 @Slf4j
 @Service
@@ -20,9 +25,12 @@ public class ResumeService {
 
     private final ResumeRepository resumeRepository;
     private final FileParserService fileParserService;
-    private final GigaChatClient llmClient;
+    private final LLMInterfaceImpl llmClient;
     private final ResumeLlmParser resumeLlmParser;
     private final ResumeMapper resumeMapper;
+
+    @Value("${llm.default}")
+    private String llmDefault;
 
     @Transactional
     public void addNewResume(MultipartFile file) throws IOException {
@@ -31,7 +39,7 @@ public class ResumeService {
 
         String text = fileParserService.extractText(file);
 
-        String responseFromLlm = llmClient.gigaChatTextToTextRequest("Ты HR-система, которая извлекает структурированные данные из резюме", "Проанализируй текст резюме и верни строго JSON в формате:\n" +
+        String responseFromLlm = llmClient.sendTextToTextRequest("Ты HR-система, которая извлекает структурированные данные из резюме", "Проанализируй текст резюме и верни строго JSON в формате:\n" +
                 "\n" +
                 "{\n" +
                 "  \"name\": \"\",\n" +
@@ -45,7 +53,8 @@ public class ResumeService {
                 "  \"languages\": \"\"\n" +
                 "}\n" +
                 "\n" +
-                "Верни ТОЛЬКО валидный JSON. Не используй массивы. Без комментариев. Без пояснений. " + text);
+                "Верни ТОЛЬКО валидный JSON. Не используй массивы. Без комментариев. Без пояснений. " + text,
+                LLMServices.valueOf(llmDefault));
 
         ResumeLlmDto resumeLlmDto = resumeLlmParser.parse(responseFromLlm);
 

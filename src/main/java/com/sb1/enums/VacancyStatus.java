@@ -5,5 +5,7 @@ public enum VacancyStatus {
     DETAILED,
     READY_FOR_SENDING,
     SENT,
-    CANCELLED;
+    CANCELLED,
+    SUCCESS_SCORING,
+    BAD_SCORING;
 }

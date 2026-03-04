@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class VacancyEnrichmentConsumer {
+public class VacancyScoringConsumer {
 
     private final VacancyService vacancyService;
 
-    @KafkaListener(topics = "topic-1", groupId = "vacancy-group")
+    @KafkaListener(topics = "topic-2", groupId = "vacancy-group")
     public void listen(Long vacancyId) {
-        log.info("Received vacancy id {} for enrichment", vacancyId);
-        vacancyService.enrichmentVacancy(vacancyId);
+        log.info("Received vacancy id {} for filtration", vacancyId);
+        vacancyService.resumeForVacancyScoring(vacancyId, 1L); // TODO резюме пока хардкод.
     }
 }

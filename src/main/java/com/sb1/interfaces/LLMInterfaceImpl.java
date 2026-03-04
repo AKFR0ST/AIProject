@@ -1,6 +1,5 @@
 package com.sb1.interfaces;
 
-import com.sb1.clients.LocalClient;
 import com.sb1.enums.LLMServices;
 import com.sb1.services.GigaChatAPIService;
 import com.sb1.services.LocalAPIService;
@@ -8,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SendRequestImpl implements SendRequest {
+public class LLMInterfaceImpl implements LLMInterface {
     public static final String MODEL_INCORRECT = "Некорректная модель";
     @Autowired
     GigaChatAPIService gigaChatAPIService;

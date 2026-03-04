@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.sb1.constants.GigaChatConstants.*;
-import static com.sb1.enums.GigaChatModels.GIGACHAT_2_MAX;
+import static com.sb1.enums.GigaChatModels.GIGACHAT_2_PRO;
 import static jakarta.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 
 @Component
@@ -155,7 +155,7 @@ public class GigaChatClient {
         messages.add(textMessage);
 
         GigaChatBaseRequest requestChat = GigaChatBaseRequest.builder()
-                .model(GIGACHAT_2_MAX.getTitle())
+                .model(GIGACHAT_2_PRO.getTitle())
                 .stream(false)
                 .updateInterval(0)
                 .messages(messages)

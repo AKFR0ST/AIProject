@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VacancyRepository extends JpaRepository<Vacancy, String> {
+    boolean existsByHhId(String hhId);
 }

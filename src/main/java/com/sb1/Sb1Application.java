@@ -33,16 +33,16 @@ public class Sb1Application {
 //        String res = gigaChatClient.gigaChatTextToTextRequest("Двоечник", "Сколько будет 2+2");
 //        System.out.println(res);
 
-        Path path = Path.of("C:\\Users\\FROST\\Desktop\\java-jun-KovalevAM\\force\\KovalevAM(Java Middle).docx");
-        MultipartFile multipartFile = new MockMultipartFile(
-                "file",                              // имя параметра
-                "KovalevAM(Java Middle).docx",             // имя файла
-                Files.probeContentType(path),        // MIME тип
-                Files.readAllBytes(path)             // содержимое
-        );
-
-        ResumeService resumeService = context.getBean(ResumeService.class);
-        resumeService.addNewResume(multipartFile);
+//        Path path = Path.of("C:\\Users\\FROST\\Desktop\\java-jun-KovalevAM\\force\\KovalevAM(Java Middle).docx");
+//        MultipartFile multipartFile = new MockMultipartFile(
+//                "file",                              // имя параметра
+//                "KovalevAM(Java Middle).docx",             // имя файла
+//                Files.probeContentType(path),        // MIME тип
+//                Files.readAllBytes(path)             // содержимое
+//        );
+//
+//        ResumeService resumeService = context.getBean(ResumeService.class);
+//        resumeService.addNewResume(multipartFile);
 
 
 //        multipartFile.getResource().getFile("C:\\Users\\FROST\\Desktop\\java-jun-KovalevAM\\force\\KovalevAM(Java Middle).docx")
