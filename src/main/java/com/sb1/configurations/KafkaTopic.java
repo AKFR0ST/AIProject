@@ -10,16 +10,21 @@ public class KafkaTopic {
 
     @Bean
     public NewTopic topic1() {
-        return TopicBuilder.name("topic-1").build();
+        return TopicBuilder.name("topic-detailed").build();
     }
 
     @Bean
     public NewTopic topic2() {
-        return TopicBuilder.name("topic-2").build();
+        return TopicBuilder.name("topic-scoring").build();
     }
 
     @Bean
     public NewTopic topic3() {
-        return TopicBuilder.name("topic-3").build();
+        return TopicBuilder.name("topic-coverLetter").build();
+    }
+
+    @Bean
+    public NewTopic topic4() {
+        return TopicBuilder.name("topic-userAnswer").build();
     }
 }

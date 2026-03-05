@@ -4,8 +4,9 @@ import com.sb1.clients.HhClient;
 import com.sb1.dto.HhResponseDto;
 import com.sb1.dto.HhVacancyDetailDto;
 import com.sb1.dto.HhVacancyDto;
+import com.sb1.dto.VacancyUserDecision;
 import com.sb1.enums.LLMServices;
-import com.sb1.enums.VacancyStatus;
+import com.sb1.enums.UserDecision;
 import com.sb1.interfaces.LLMInterfaceImpl;
 import com.sb1.mappers.VacancyMapper;
 import com.sb1.models.hh.Resume;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.Objects;
 
@@ -30,11 +32,21 @@ import static com.sb1.enums.VacancyStatus.*;
 public class VacancyService {
 
     public static final String MESSAGE_WITH_STATUS_SENT_TO_KAFKA_FOR_VACANCY = "Message with status {} sent to Kafka for vacancy {}";
+    public static final String VACANCY_WITH_ID_SCORING_SUCCESS_RESULT = "Vacancy with id {} scoring success, result: {}";
+    public static final String VACANCY_WITH_ID_SCORING_BAD_RESULT = "Vacancy with id {} scoring fail, result: {}";
+    public static final String SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC = "Success to send message about vacancy with id {}, and status{} to topic{}";
+    public static final String FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC = "Failed to send message for vacancy {}, to topic{}";
+    public static final String NEW_VACANCY_WITH_ID_SAVED = "NEW vacancy with id {} saved: {}";
+    public static final String VACANCY_WITH_ID_DETAILED = "Vacancy with id {} detailed: {}";
+    public static final String COVER_LETTER_FOR_VACANCY_WITH_ID_READY = "Cover letter for vacancy with id {} ready";
+    public static final String VACANCY_WITH_ID_APPROVED_BY_USER = "Vacancy with id {} approved by user";
+    public static final String VACANCY_WITH_ID_REJECTED_BY_USER = "Vacancy with id {} rejected by user";
     private final HhClient hhClient;
     private final VacancyRepository vacancyRepository;
     private final ResumeRepository resumeRepository;
     private final KafkaTemplate<String, Long> kafkaTemplate;
     private final LLMInterfaceImpl sendRequestImpl;
+    private final TelegramService telegramService;
 
     @Autowired
     private VacancyMapper vacancyMapper;
@@ -63,14 +75,14 @@ public class VacancyService {
 
                 Vacancy vacancy = vacancyMapper.toEntity(dto);
                 vacancyRepository.save(vacancy);
-                log.info("NEW vacancy with id {} saved: {}", vacancy.getId(), vacancy.getName());
+                log.info(NEW_VACANCY_WITH_ID_SAVED, vacancy.getId(), vacancy.getName());
 
-                kafkaTemplate.send("topic-1", vacancy.getId())
+                kafkaTemplate.send("topic-detailed", vacancy.getId())
                         .whenComplete((result, ex) -> {
                             if (Objects.isNull(ex)) {
-                                log.info(MESSAGE_WITH_STATUS_SENT_TO_KAFKA_FOR_VACANCY, vacancy.getStatus(), vacancy.getId());
+                                log.info(SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), NEW, "topic-detailed");
                             } else {
-                                log.error("Failed to send message for vacancy {}", vacancy.getId(), ex);
+                                log.error(FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-detailed", ex);
                             }
                         });
             }
@@ -85,18 +97,18 @@ public class VacancyService {
 
         vacancyMapper.updateFromDetail(detail, vacancy);
 
-        vacancy.setStatus(VacancyStatus.DETAILED);
+        vacancy.setStatus(DETAILED);
 
         vacancyRepository.save(vacancy);
 
-        log.info("Vacancy with id {} detailed: {}", vacancy.getId(), vacancy.getName());
+        log.info(VACANCY_WITH_ID_DETAILED, vacancy.getId(), vacancy.getName());
 
-        kafkaTemplate.send("topic-2", vacancy.getId())
+        kafkaTemplate.send("topic-scoring", vacancy.getId())
                 .whenComplete((result, ex) -> {
                     if (Objects.isNull(ex)) {
-                        log.info(MESSAGE_WITH_STATUS_SENT_TO_KAFKA_FOR_VACANCY, vacancy.getStatus(), vacancy.getId());
+                        log.info(SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), DETAILED, "topic-scoring");
                     } else {
-                        log.error("Failed to send message for vacancy {}", vacancy.getId(), ex);
+                        log.error(FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-scoring", ex);
                     }
                 });
     }
@@ -146,9 +158,30 @@ public class VacancyService {
 
         vacancy.setCoverLetter(coverLetter);
 
-        vacancy.setStatus(READY_FOR_SENDING);
+        vacancy.setStatus(READY_COVERAGE_LETTER);
 
         vacancyRepository.save(vacancy);
+        log.info(COVER_LETTER_FOR_VACANCY_WITH_ID_READY, vacancy.getId());
+
+        try {
+            telegramService.sendVacancy(519674552L, vacancy);
+            vacancy.setStatus(SENT_TO_USER_FOR_APPROVE);
+            vacancyRepository.save(vacancy);
+        }
+        catch (TelegramApiException e) {
+            log.error("Failed to send message about vacancy {} to user with telegram", vacancy.getId(), e);
+        }
+
+
+
+//        kafkaTemplate.send("topic-4", vacancy.getId())
+//                .whenComplete((result, ex) -> {
+//                    if (Objects.isNull(ex)) {
+//                        log.info(MESSAGE_WITH_STATUS_SENT_TO_KAFKA_FOR_VACANCY, vacancy.getStatus(), vacancy.getId());
+//                    } else {
+//                        log.error("Failed to send message for vacancy {}", vacancy.getId(), ex);
+//                    }
+//                });
 
     }
 
@@ -191,21 +224,57 @@ public class VacancyService {
 
         if(Integer.parseInt(score)>=10) {
             vacancy.setStatus(SUCCESS_SCORING);
-            kafkaTemplate.send("topic-3", vacancy.getId())
+            kafkaTemplate.send("topic-coverLetter", vacancy.getId())
                     .whenComplete((result, ex) -> {
                         if (Objects.isNull(ex)) {
                             log.info(MESSAGE_WITH_STATUS_SENT_TO_KAFKA_FOR_VACANCY, vacancy.getStatus(), vacancy.getId());
                         } else {
-                            log.error("Failed to send message for vacancy {}", vacancy.getId(), ex);
+                            log.error(FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-coverLetter", ex);
                         }
                     });
-            log.info("Vacancy with id {} scoring success, result: {}", vacancyId, score);
+            log.info(VACANCY_WITH_ID_SCORING_SUCCESS_RESULT, vacancyId, score);
         }
         else {
             vacancy.setStatus(BAD_SCORING);
-            log.info("Vacancy with id {} scoring fail, result: {}", vacancyId, score);
+            log.info(VACANCY_WITH_ID_SCORING_BAD_RESULT, vacancyId, score);
         }
         vacancyRepository.save(vacancy);
     }
 
+//    public void getApproveByUser(Long vacancyId) throws TelegramApiException {
+//        Vacancy vacancy = vacancyRepository.findById(String.valueOf(vacancyId)).orElseThrow();
+//        telegramService.sendVacancy(519674552L, vacancy);
+//    }
+
+//    public void approveVacancy(Long vacancyId) {
+//        Vacancy vacancy = vacancyRepository.findById(String.valueOf(vacancyId)).orElseThrow();
+//        vacancy.setStatus(READY_FOR_SENDING_TO_MAILER);
+//        vacancyRepository.save(vacancy);
+//        log.info("Vacancy with id {} approved by user", vacancyId);
+//        // TODO отправка на почту.
+//
+//    }
+//
+//    public void rejectVacancy(Long vacancyId) {
+//        Vacancy vacancy = vacancyRepository.findById(String.valueOf(vacancyId)).orElseThrow();
+//        vacancy.setStatus(REJECTED_BY_USER);
+//        vacancyRepository.save(vacancy);
+//        log.info("Vacancy with id {} rejected by user", vacancyId);
+//    }
+
+    public void processingUserDecision(Long vacancyId, VacancyUserDecision decision) {
+        Vacancy vacancy = vacancyRepository.findById(String.valueOf(vacancyId)).orElseThrow();
+        if (decision.decision().equals(UserDecision.APPROVE)){
+            vacancy.setStatus(READY_FOR_SENDING_TO_MAILER);
+            vacancyRepository.save(vacancy);
+            log.info(VACANCY_WITH_ID_APPROVED_BY_USER, vacancyId);
+            // TODO отправка на почту.
+        }
+        else{
+            vacancy.setStatus(REJECTED_BY_USER);
+            vacancyRepository.save(vacancy);
+            log.info(VACANCY_WITH_ID_REJECTED_BY_USER, vacancyId);
+        }
+
+    }
 }

@@ -10,11 +10,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class VacancyDetailedConsumer {
 
+    public static final String RECEIVED_VACANCY_ID_FOR_DETAILED = "Received vacancy id {} for detailed";
     private final VacancyService vacancyService;
 
-    @KafkaListener(topics = "topic-1", groupId = "vacancy-group")
+    @KafkaListener(topics = "topic-detailed", groupId = "vacancy-group")
     public void listen(Long vacancyId) {
-        log.info("Received vacancy id {} for enrichment", vacancyId);
+        log.info(RECEIVED_VACANCY_ID_FOR_DETAILED, vacancyId);
         vacancyService.detailVacancy(vacancyId);
     }
 }
