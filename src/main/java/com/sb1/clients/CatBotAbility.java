@@ -31,8 +31,8 @@ public class CatBotAbility extends AbilityBot {
     @Autowired
     private LLMInterfaceImpl sendRequestImpl;
 
-    public CatBotAbility(@Value("${telegramm.bot.name}") String botName,
-                         @Value("${telegramm.bot.token}") String botToken
+    public CatBotAbility(@Value("${telegram.bot.name}") String botName,
+                         @Value("${telegram.bot.token}") String botToken
     ) {
         super(botToken, botName);
     }

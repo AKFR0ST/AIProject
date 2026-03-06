@@ -15,9 +15,9 @@ public class VacancyUserAnswerConsumer {
     private final VacancyService vacancyService;
 
     @KafkaListener(topics = "topic-userAnswer", groupId = "vacancy-group")
-    public void listen(Long vacancyId, VacancyUserDecision decision) throws TelegramApiException {
-        log.info("Received vacancy id {} user answer", vacancyId);
+    public void listen(VacancyUserDecision decision) {
+        log.info("Received vacancy id {} user answer", decision.getVacancyId());
 
-        vacancyService.processingUserDecision(vacancyId, decision);
+        vacancyService.processingUserDecision(decision);
     }
 }

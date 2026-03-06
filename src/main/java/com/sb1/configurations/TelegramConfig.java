@@ -1,17 +1,27 @@
 package com.sb1.configurations;
 
+import com.sb1.clients.Sb1TelegramBot;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-//@Configuration
+@Configuration
 public class TelegramConfig {
 
-//    @Value("${telegramm.bot.token}")
+    @Bean
+    public TelegramBotsApi telegramBotsApi(Sb1TelegramBot bot) throws Exception {
+        TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
+        botsApi.registerBot(bot);
+        return botsApi;
+    }
+
+//    @Value("${telegram.bot.token}")
 //    private String token;
 //
-//    @Value("${telegramm.bot.name}")
+//    @Value("${telegram.bot.name}")
 //    private String name;
 //
 //    @Bean

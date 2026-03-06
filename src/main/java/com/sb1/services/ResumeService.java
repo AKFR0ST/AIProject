@@ -15,9 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-import static com.sb1.enums.LLMServices.GIGA_CHAT;
-import static com.sb1.enums.LLMServices.GPT_OSS20B;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,7 +26,7 @@ public class ResumeService {
     private final ResumeLlmParser resumeLlmParser;
     private final ResumeMapper resumeMapper;
 
-    @Value("${llm.default}")
+    @Value("${local.llm.default}")
     private String llmDefault;
 
     @Transactional
