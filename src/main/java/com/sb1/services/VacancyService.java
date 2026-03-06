@@ -1,12 +1,15 @@
 package com.sb1.services;
 
 import com.sb1.clients.HhClient;
-import com.sb1.constants.Prompts;
+import com.sb1.constants.KafkaTopicsConstants;
+import com.sb1.constants.LlmPrompts;
+import com.sb1.constants.VacancyServiceConstants;
 import com.sb1.dto.HhResponseDto;
 import com.sb1.dto.HhVacancyDetailDto;
 import com.sb1.dto.HhVacancyDto;
 import com.sb1.dto.VacancyUserDecision;
 import com.sb1.enums.LLMServices;
+import com.sb1.enums.Senders;
 import com.sb1.enums.UserDecision;
 import com.sb1.interfaces.LLMInterfaceImpl;
 import com.sb1.mappers.VacancyMapper;
@@ -23,10 +26,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
-import static com.sb1.constants.Prompts.COVER_LETTER_TEMPLATE;
-import static com.sb1.constants.Prompts.SCORE_TEMPLATE;
+import static com.sb1.constants.LlmPrompts.COVER_LETTER_TEMPLATE;
+import static com.sb1.constants.LlmPrompts.SCORE_TEMPLATE;
+import static com.sb1.enums.Senders.HH;
 import static com.sb1.enums.VacancyStatus.*;
 
 @Slf4j
@@ -34,19 +42,6 @@ import static com.sb1.enums.VacancyStatus.*;
 @RequiredArgsConstructor
 public class VacancyService {
 
-    public static final String MESSAGE_WITH_STATUS_SENT_TO_KAFKA_FOR_VACANCY = "Message with status {} sent to Kafka for vacancy {}";
-    public static final String VACANCY_WITH_ID_SCORING_SUCCESS_RESULT = "Vacancy with id {} scoring success, result: {}";
-    public static final String VACANCY_WITH_ID_SCORING_BAD_RESULT = "Vacancy with id {} scoring fail, result: {}";
-    public static final String SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC = "Success to send message about vacancy with id {}, and status{} to topic{}";
-    public static final String FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC = "Failed to send message for vacancy {}, to topic{}";
-    public static final String NEW_VACANCY_WITH_ID_SAVED = "NEW vacancy with id {} saved: {}";
-    public static final String VACANCY_WITH_ID_DETAILED = "Vacancy with id {} detailed: {}";
-    public static final String COVER_LETTER_FOR_VACANCY_WITH_ID_READY = "Cover letter for vacancy with id {} ready";
-    public static final String VACANCY_WITH_ID_APPROVED_BY_USER = "Vacancy with id {} approved by user";
-    public static final String VACANCY_WITH_ID_REJECTED_BY_USER = "Vacancy with id {} rejected by user";
-    public static final String PROFESSIONAL_RECRUTER = "Профессиональный рекрутер";
-    public static final String FAILED_TO_SEND_MESSAGE_ABOUT_VACANCY_TO_USER_WITH_TELEGRAM = "Failed to send message about vacancy {} to user with telegram";
-    public static final String YOU_ARE_ATS_SYSTEM = "Ты — система предварительного отбора кандидатов (ATS) с функцией экспертной оценки.";
     private final HhClient hhClient;
     private final VacancyRepository vacancyRepository;
     private final ResumeRepository resumeRepository;
@@ -64,13 +59,28 @@ public class VacancyService {
     @Value("${hh.search.per-page}")
     private int perPage;
 
-    @Value("${local.llm.default}")
+    private OffsetDateTime lastCheckTime = OffsetDateTime.now().minusHours(24);  // Обработка вакансий за последние сутки.
+
+    @Value("${general.llm.default}")
     private String llmDefault;
+
+    @Value("${general.default.sender}")
+    private Senders defaultSender;
+
+    @Value("${general.default.minimum.scoring}")
+    private int minScore;
 
     @Scheduled(fixedDelayString = "${hh.search.delay}") // каждые 10 минут
     public void fetchAndStoreNewVacancy() {
 
-        HhResponseDto responseDto = hhClient.searchNewVacancies("Java разработчик", area, 96,  "between1And3", "publication_time", perPage );
+        String dateFrom = lastCheckTime
+                .truncatedTo(ChronoUnit.SECONDS)
+                .withOffsetSameInstant(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+        HhResponseDto responseDto = hhClient.searchNewVacancies("Java разработчик", area, 96,  "between1And3", "publication_time", perPage, dateFrom);
+
+        lastCheckTime = OffsetDateTime.now();
 
         if (Objects.isNull(responseDto) || Objects.isNull(responseDto.getItems())) {
             return;
@@ -82,14 +92,14 @@ public class VacancyService {
 
                 Vacancy vacancy = vacancyMapper.toEntity(dto);
                 vacancyRepository.save(vacancy);
-                log.info(NEW_VACANCY_WITH_ID_SAVED, vacancy.getId(), vacancy.getName());
+                log.info(VacancyServiceConstants.NEW_VACANCY_WITH_ID_SAVED, vacancy.getId(), vacancy.getName());
 
                 kafkaTemplate.send("topic-detailed", vacancy.getId())
                         .whenComplete((result, ex) -> {
                             if (Objects.isNull(ex)) {
-                                log.info(SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), NEW, "topic-detailed");
+                                log.info(KafkaTopicsConstants.SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), NEW, "topic-detailed");
                             } else {
-                                log.error(FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-detailed", ex);
+                                log.error(KafkaTopicsConstants.FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-detailed", ex);
                             }
                         });
             }
@@ -108,14 +118,14 @@ public class VacancyService {
 
         vacancyRepository.save(vacancy);
 
-        log.info(VACANCY_WITH_ID_DETAILED, vacancy.getId(), vacancy.getName());
+        log.info(VacancyServiceConstants.VACANCY_WITH_ID_DETAILED, vacancy.getId(), vacancy.getName());
 
         kafkaTemplate.send("topic-scoring", vacancy.getId())
                 .whenComplete((result, ex) -> {
                     if (Objects.isNull(ex)) {
-                        log.info(SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), DETAILED, "topic-scoring");
+                        log.info(KafkaTopicsConstants.SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), DETAILED, "topic-scoring");
                     } else {
-                        log.error(FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-scoring", ex);
+                        log.error(KafkaTopicsConstants.FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-scoring", ex);
                     }
                 });
     }
@@ -132,7 +142,7 @@ public class VacancyService {
         String prompt = String.format(COVER_LETTER_TEMPLATE, vacancy, resume);
 
         String coverLetter = sendRequestImpl.sendTextToTextRequest(
-                PROFESSIONAL_RECRUTER,
+                LlmPrompts.PROFESSIONAL_RECRUTER,
                 prompt,
                 LLMServices.valueOf(llmDefault)
         );
@@ -142,7 +152,7 @@ public class VacancyService {
         vacancy.setStatus(READY_COVERAGE_LETTER);
 
         vacancyRepository.save(vacancy);
-        log.info(COVER_LETTER_FOR_VACANCY_WITH_ID_READY, vacancy.getId());
+        log.info(VacancyServiceConstants.COVER_LETTER_FOR_VACANCY_WITH_ID_READY, vacancy.getId());
 
         try {
             telegramService.sendVacancy(519674552L, vacancy);
@@ -150,12 +160,12 @@ public class VacancyService {
             vacancyRepository.save(vacancy);
         }
         catch (TelegramApiException e) {
-            log.error(FAILED_TO_SEND_MESSAGE_ABOUT_VACANCY_TO_USER_WITH_TELEGRAM, vacancy.getId(), e);
+            log.error(VacancyServiceConstants.FAILED_TO_SEND_MESSAGE_ABOUT_VACANCY_TO_USER_WITH_TELEGRAM, vacancy.getId(), e);
         }
 
     }
 
-    public void resumeForVacancyScoring(Long vacancyId, Long resumeId){
+    public void vacancyScoring(Long vacancyId, Long resumeId){
         Vacancy vacancy = vacancyRepository.findById(String.valueOf(vacancyId))
                 .orElseThrow();
         Resume resume = resumeRepository.findById(resumeId).orElseThrow();
@@ -166,26 +176,26 @@ public class VacancyService {
         );
 
         String score = sendRequestImpl.sendTextToTextRequest(
-                YOU_ARE_ATS_SYSTEM,
+                LlmPrompts.YOU_ARE_ATS_SYSTEM,
                 prompt,
                 LLMServices.valueOf(llmDefault)
         );
 
-        if(Integer.parseInt(score)>=10) {
+        if(Integer.parseInt(score)>=minScore) {
             vacancy.setStatus(SUCCESS_SCORING);
             kafkaTemplate.send("topic-coverLetter", vacancy.getId())
                     .whenComplete((result, ex) -> {
                         if (Objects.isNull(ex)) {
-                            log.info(MESSAGE_WITH_STATUS_SENT_TO_KAFKA_FOR_VACANCY, vacancy.getStatus(), vacancy.getId());
+                            log.info(KafkaTopicsConstants.MESSAGE_WITH_STATUS_SENT_TO_KAFKA_FOR_VACANCY, vacancy.getStatus(), vacancy.getId());
                         } else {
-                            log.error(FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-coverLetter", ex);
+                            log.error(KafkaTopicsConstants.FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-coverLetter", ex);
                         }
                     });
-            log.info(VACANCY_WITH_ID_SCORING_SUCCESS_RESULT, vacancyId, score);
+            log.info(VacancyServiceConstants.VACANCY_WITH_ID_SCORING_SUCCESS_RESULT, vacancyId, score);
         }
         else {
             vacancy.setStatus(BAD_SCORING);
-            log.info(VACANCY_WITH_ID_SCORING_BAD_RESULT, vacancyId, score);
+            log.info(VacancyServiceConstants.VACANCY_WITH_ID_SCORING_BAD_RESULT, vacancyId, score);
         }
         vacancyRepository.save(vacancy);
     }
@@ -195,14 +205,18 @@ public class VacancyService {
         if (decision.getDecision().equals(UserDecision.APPROVE)){
             vacancy.setStatus(READY_FOR_SENDING_TO_MAILER);
             vacancyRepository.save(vacancy);
-            log.info(VACANCY_WITH_ID_APPROVED_BY_USER, decision.getVacancyId());
-            // Пошел отклик в hh.ru
-            hhApplyService.apply(decision.getVacancyId());
+            log.info(VacancyServiceConstants.VACANCY_WITH_ID_APPROVED_BY_USER, decision.getVacancyId());
+
+            //  Отправка отклика через выбранный сендер
+            if(HH.equals(defaultSender)){
+                hhApplyService.apply(decision.getVacancyId());
+            }
+
         }
         else{
             vacancy.setStatus(REJECTED_BY_USER);
             vacancyRepository.save(vacancy);
-            log.info(VACANCY_WITH_ID_REJECTED_BY_USER, decision.getVacancyId());
+            log.info(VacancyServiceConstants.VACANCY_WITH_ID_REJECTED_BY_USER, decision.getVacancyId());
         }
 
     }

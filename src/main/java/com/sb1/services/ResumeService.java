@@ -15,6 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+import static com.sb1.constants.LlmPrompts.RESUME_PARSER_SYSTEM;
+import static com.sb1.constants.LlmPrompts.RESUME_PARSER_USER;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,7 +29,7 @@ public class ResumeService {
     private final ResumeLlmParser resumeLlmParser;
     private final ResumeMapper resumeMapper;
 
-    @Value("${local.llm.default}")
+    @Value("${general.llm.default}")
     private String llmDefault;
 
     @Transactional
@@ -36,22 +39,11 @@ public class ResumeService {
 
         String text = fileParserService.extractText(file);
 
-        String responseFromLlm = llmClient.sendTextToTextRequest("Ты HR-система, которая извлекает структурированные данные из резюме", "Проанализируй текст резюме и верни строго JSON в формате:\n" +
-                "\n" +
-                "{\n" +
-                "  \"name\": \"\",\n" +
-                "  \"email\": \"\",\n" +
-                "  \"phone\": \"\",\n" +
-                "  \"city\": \"\",\n" +
-                "  \"profession\": \"\",\n" +
-                "  \"skills\": \"\",\n" +
-                "  \"experience\": \"\",\n" +
-                "  \"education\": \"\",\n" +
-                "  \"languages\": \"\"\n" +
-                "}\n" +
-                "\n" +
-                "Верни ТОЛЬКО валидный JSON. Не используй массивы. Без комментариев. Без пояснений. " + text,
-                LLMServices.valueOf(llmDefault));
+        String responseFromLlm = llmClient.sendTextToTextRequest(
+                RESUME_PARSER_SYSTEM,
+                RESUME_PARSER_USER.formatted(text),
+                LLMServices.valueOf(llmDefault)
+        );
 
         ResumeLlmDto resumeLlmDto = resumeLlmParser.parse(responseFromLlm);
 

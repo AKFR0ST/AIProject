@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -22,7 +23,7 @@ public class FileParserService {
 
     public String extractText(MultipartFile file) {
 
-        if (file == null || file.isEmpty()) {
+        if (Objects.isNull(file)) {
             throw new IllegalArgumentException("File is empty");
         }
 

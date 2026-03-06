@@ -25,7 +25,7 @@ public class HhApplyService {
                     new Browser.NewContextOptions().setStorageStatePath(storageFile.toPath())
             );
         } else {
-            // авторизация вручную
+            // авторизация вручную????
             context = browser.newContext();
             Page page = context.newPage();
             page.navigate("https://hh.ru");

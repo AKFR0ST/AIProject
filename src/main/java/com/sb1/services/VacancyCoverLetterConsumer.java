@@ -1,5 +1,6 @@
 package com.sb1.services;
 
+import com.sb1.constants.KafkaTopicsConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -14,7 +15,7 @@ public class VacancyCoverLetterConsumer {
 
     @KafkaListener(topics = "topic-coverLetter", groupId = "vacancy-group")
     public void listen(Long vacancyId) {
-        log.info("Received vacancy id {} for creating cover letter", vacancyId);
+        log.info(KafkaTopicsConstants.RECEIVED_VACANCY_ID_FOR_CREATING_COVER_LETTER, vacancyId);
         vacancyService.createCoverLetter(vacancyId);
     }
 }

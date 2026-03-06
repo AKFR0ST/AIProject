@@ -1,11 +1,10 @@
 package com.sb1.services;
 
 import com.sb1.clients.Sb1TelegramBot;
-import com.sb1.dto.VacancyUserDecision;
 import com.sb1.models.hh.Vacancy;
+import com.sb1.utils.TelegramHtmlFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -22,7 +21,6 @@ public class TelegramService {
     public static final String VACANCY_SENT_TO_USER_FOR_APPROVE = "Vacancy {} sent to user for approve";
     private final Sb1TelegramBot bot;
 
-    // Отправка вакансии
     public void sendVacancy(Long chatId, Vacancy vacancy) throws TelegramApiException {
         SendMessage message = SendMessage.builder()
                 .chatId(chatId.toString())
@@ -57,6 +55,7 @@ public class TelegramService {
                 💰 %s
                 ---
                 %s
+                %s
                 ---
                 %s
                 """.formatted(
@@ -65,8 +64,10 @@ public class TelegramService {
                 vacancy.getSalaryFrom() != null
                         ? vacancy.getSalaryFrom() + " - " + vacancy.getSalaryTo()
                         : "Не указана",
-                vacancy.getDescription(),
+                vacancy.getUrl(),
+                TelegramHtmlFormatter.format(vacancy.getDescription()),
                 vacancy.getCoverLetter()
         );
     }
+
 }

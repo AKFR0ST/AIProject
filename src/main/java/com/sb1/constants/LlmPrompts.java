@@ -1,8 +1,11 @@
 package com.sb1.constants;
 
-public final class Prompts {
+public final class LlmPrompts {
 
-    private Prompts() {} // запрет создания экземпляра
+    public static final String PROFESSIONAL_RECRUTER = "Профессиональный рекрутер";
+    public static final String YOU_ARE_ATS_SYSTEM = "Ты — система предварительного отбора кандидатов (ATS) с функцией экспертной оценки.";
+
+    private LlmPrompts() {} // запрет создания экземпляра
 
     public static final String COVER_LETTER_TEMPLATE = """
             Ты — IT-рекрутер и бывший технический специалист. Пишешь лаконичные, содержательные сопроводительные письма без воды.
@@ -21,7 +24,7 @@ public final class Prompts {
 
             Формат письма:
 
-            5–6 предложений
+            1–2 предложения
             конкретика по стеку
             без клише
             без повторения всего резюме
@@ -57,4 +60,32 @@ public final class Prompts {
 
             В ответе должна быть только итоговая оценка
             """;
+
+    public static final String RESUME_PARSER_SYSTEM =
+            "Ты HR-система, которая извлекает структурированные данные из резюме";
+
+    public static final String RESUME_PARSER_USER = """
+            Проанализируй текст резюме и верни строго JSON в формате:
+
+            {
+              "name": "",
+              "email": "",
+              "phone": "",
+              "city": "",
+              "profession": "",
+              "skills": "",
+              "experience": "",
+              "education": "",
+              "languages": ""
+            }
+
+            Верни ТОЛЬКО валидный JSON.
+            Не используй массивы.
+            Без комментариев.
+            Без пояснений.
+
+            Текст резюме:
+            %s
+            """;
 }
+
