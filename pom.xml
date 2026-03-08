@@ -28,6 +28,14 @@
     </scm>
     <properties>
         <java.version>21</java.version>
+        <telegrambots.version>6.9.7.1</telegrambots.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <lombok.version>1.18.42</lombok.version>
+        <pdfbox.version>2.0.30</pdfbox.version>
+        <poi-ooxml.version>5.2.5</poi-ooxml.version>
+        <resilience4j-spring-boot3.version>2.3.0</resilience4j-spring-boot3.version>
+        <playwright.version>1.42.0</playwright.version>
+        <instancio-junit.version>5.5.1</instancio-junit.version>
     </properties>
 
     <dependencies>
@@ -38,6 +46,19 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
@@ -51,13 +72,13 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.42</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
@@ -68,33 +89,25 @@
             <artifactId>spring-kafka-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.instancio</groupId>
             <artifactId>instancio-junit</artifactId>
-            <version>5.5.1</version>
+            <version>${instancio-junit.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.telegram/telegrambots -->
         <dependency>
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots</artifactId>
-            <version>6.9.7.1</version>
+            <version>${telegrambots.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.telegram/telegrambots-spring-boot-starter -->
         <dependency>
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots-spring-boot-starter</artifactId>
-            <version>6.9.7.1</version>
+            <version>${telegrambots.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.telegram</groupId>
-            <artifactId>telegrambots-abilities</artifactId>
-            <version>6.9.7.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
+
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -102,34 +115,31 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.6.3</version>
+            <version>${mapstruct.version}</version>
         </dependency>
-        <!-- PDF -->
-        <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>2.0.30</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.microsoft.playwright</groupId>
             <artifactId>playwright</artifactId>
-            <version>1.42.0</version>
+            <version>${playwright.version}</version>
         </dependency>
 
-
-        <!-- DOCX -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.2.5</version>
+            <version>${poi-ooxml.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${pdfbox.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+            <version>${resilience4j-spring-boot3.version}</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -142,13 +152,13 @@
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
-                            <version>1.18.42</version>
+                            <version>${lombok.version}</version>
                             <artifactId>lombok</artifactId>
                         </path>
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
-                            <version>1.6.3</version>
+                            <version>${mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

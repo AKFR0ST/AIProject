@@ -4,7 +4,6 @@ import com.sb1.clients.HhClient;
 import com.sb1.constants.KafkaTopicsConstants;
 import com.sb1.constants.LlmPrompts;
 import com.sb1.constants.VacancyServiceConstants;
-import com.sb1.dto.HhResponseDto;
 import com.sb1.dto.HhVacancyDetailDto;
 import com.sb1.dto.HhVacancyDto;
 import com.sb1.dto.VacancyUserDecision;
@@ -30,6 +29,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Objects;
 
 import static com.sb1.constants.LlmPrompts.COVER_LETTER_TEMPLATE;
@@ -53,13 +53,10 @@ public class VacancyService {
     @Autowired
     private VacancyMapper vacancyMapper;
 
-    @Value("${hh.search.area}")
-    private String area;
-
     @Value("${hh.search.per-page}")
     private int perPage;
 
-    private OffsetDateTime lastCheckTime = OffsetDateTime.now().minusHours(24);  // Обработка вакансий за последние сутки.
+    private OffsetDateTime lastCheckTime = OffsetDateTime.now().minusHours(72);  // Стартовая бработка вакансий за последние 3 суток.
 
     @Value("${general.llm.default}")
     private String llmDefault;
@@ -78,15 +75,17 @@ public class VacancyService {
                 .withOffsetSameInstant(ZoneOffset.UTC)
                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-        HhResponseDto responseDto = hhClient.searchNewVacancies("Java разработчик", area, 96,  "between1And3", "publication_time", perPage, dateFrom);
+        log.info("lastCheckTime: {}", dateFrom);
+
+        List<HhVacancyDto> vacancies = hhClient.searchAllVacancies("Java разработчик", 96,  "between1And3", "publication_time", perPage, dateFrom);
 
         lastCheckTime = OffsetDateTime.now();
 
-        if (Objects.isNull(responseDto) || Objects.isNull(responseDto.getItems())) {
+        if (Objects.isNull(vacancies)) {
             return;
         }
 
-        for (HhVacancyDto dto : responseDto.getItems()) {
+        for (HhVacancyDto dto : vacancies) {
 
             if (!vacancyRepository.existsByHhId(dto.getId())) {
 
@@ -112,22 +111,36 @@ public class VacancyService {
 
         HhVacancyDetailDto detail = hhClient.getVacancyById(vacancy.getHhId());
 
-        vacancyMapper.updateFromDetail(detail, vacancy);
+        if (Objects.isNull(detail)) {
 
-        vacancy.setStatus(DETAILED);
+            kafkaTemplate.send("topic-detailed", vacancy.getId())
+                    .whenComplete((result, ex) -> {
+                        if (Objects.isNull(ex)) {
+                            log.info(KafkaTopicsConstants.SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), DETAILED, "topic-scoring");
+                        } else {
+                            log.error(KafkaTopicsConstants.FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-scoring", ex);
+                        }
+                    });
+        }
+        else {
 
-        vacancyRepository.save(vacancy);
+            vacancyMapper.updateFromDetail(detail, vacancy);
 
-        log.info(VacancyServiceConstants.VACANCY_WITH_ID_DETAILED, vacancy.getId(), vacancy.getName());
+            vacancy.setStatus(DETAILED);
 
-        kafkaTemplate.send("topic-scoring", vacancy.getId())
-                .whenComplete((result, ex) -> {
-                    if (Objects.isNull(ex)) {
-                        log.info(KafkaTopicsConstants.SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), DETAILED, "topic-scoring");
-                    } else {
-                        log.error(KafkaTopicsConstants.FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-scoring", ex);
-                    }
-                });
+            vacancyRepository.save(vacancy);
+
+            log.info(VacancyServiceConstants.VACANCY_WITH_ID_DETAILED, vacancy.getId(), vacancy.getName());
+
+            kafkaTemplate.send("topic-scoring", vacancy.getId())
+                    .whenComplete((result, ex) -> {
+                        if (Objects.isNull(ex)) {
+                            log.info(KafkaTopicsConstants.SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), DETAILED, "topic-scoring");
+                        } else {
+                            log.error(KafkaTopicsConstants.FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-scoring", ex);
+                        }
+                    });
+        }
     }
 
     public void createCoverLetter(Long id) {

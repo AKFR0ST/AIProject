@@ -23,6 +23,7 @@ public interface VacancyMapper {
     @Mapping(target = "salaryFrom", source = "salary.from")
     @Mapping(target = "salaryTo", source = "salary.to")
     @Mapping(target = "status", constant = "NEW")
+    @Mapping(target = "coverLetter", ignore = true)
     Vacancy toEntity(HhVacancyDto dto);
 
     @BeanMapping(ignoreByDefault = true)
