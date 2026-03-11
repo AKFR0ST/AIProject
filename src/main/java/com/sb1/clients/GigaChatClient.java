@@ -41,7 +41,6 @@ public class GigaChatClient {
         this.authUrl = authUrl;
         this.baseUrl = baseUrl;
         this.filesUrl = filesUrl;
-//        System.out.println(authUrl);
 
         updateAuthClient();
         updateBaseClient();
@@ -165,11 +164,6 @@ public class GigaChatClient {
 
         return gigaChatBaseResponse.getGigaChatChoices().getFirst().getRequestMessage().getContent();
     }
-
-//    public void printToken() {
-//        updateToken();
-//        System.out.println("GigaChat token: " + token);
-//    }
 
     private void updateToken() {
         GigaChatResponseToken result = authRestClient.post().body(SCOPE_GIGACHAT_API_PERS).retrieve().body(GigaChatResponseToken.class);

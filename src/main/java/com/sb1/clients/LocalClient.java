@@ -14,23 +14,14 @@ import static com.sb1.constants.GigaChatConstants.BEARER;
 
 @Component
 public class LocalClient {
-    private final String baseUrl;
-    private final String bearerToken;
+
+    private final WebClient webClient;
 
     public LocalClient(
             @Value("${local.base.url}") String baseUrl,
             @Value("${local.bearer.token}")String bearerToken
     ){
-        this.baseUrl = baseUrl;
-        this.bearerToken = bearerToken;
-    }
-
-    WebClient webClient;
-
-    private void updateClient(
-
-    ){
-        webClient = WebClient.builder()
+        this.webClient = WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .defaultHeader(ACCEPT, APPLICATION_JSON)
@@ -46,7 +37,6 @@ public class LocalClient {
                 .stream(false)
                 .build();
 
-        updateClient();
         LocalResponse response = null;
     try {
         response = webClient.post()
