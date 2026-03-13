@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.mock.web.MockMultipartFile;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -18,18 +18,11 @@ import java.nio.file.Path;
 public class Sb1Application {
 
     public static void main(String[] args) throws IOException, TelegramApiException {
+
         ApplicationContext context = SpringApplication.run(Sb1Application.class, args);
 
-        Path path = Path.of("C:\\Users\\FROST\\Desktop\\java-jun-KovalevAM\\force\\KovalevAM(Java Middle).docx");
-        MultipartFile multipartFile = new MockMultipartFile(
-                "file",                              // имя параметра
-                "KovalevAM(Java Middle).docx",             // имя файла
-                Files.probeContentType(path),        // MIME тип
-                Files.readAllBytes(path)             // содержимое
-        );
-
         ResumeService resumeService = context.getBean(ResumeService.class);
-        resumeService.addNewResume(multipartFile);
+        resumeService.loadResumeFromPath();
 
     }}
 
