@@ -5,7 +5,7 @@ public final class LlmPrompts {
     public static final String PROFESSIONAL_RECRUTER = "Профессиональный рекрутер";
     public static final String YOU_ARE_ATS_SYSTEM = "Ты — система предварительного отбора кандидатов (ATS) с функцией экспертной оценки.";
 
-    private LlmPrompts() {} // запрет создания экземпляра
+    private LlmPrompts() {}
 
     public static final String COVER_LETTER_TEMPLATE = """
             Ты — IT-рекрутер и бывший технический специалист. Пишешь лаконичные, содержательные сопроводительные письма без воды.
