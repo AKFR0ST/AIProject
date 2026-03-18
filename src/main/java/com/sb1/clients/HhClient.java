@@ -3,11 +3,12 @@ package com.sb1.clients;
 import com.sb1.dto.HhResponseDto;
 import com.sb1.dto.HhVacancyDetailDto;
 import com.sb1.dto.HhVacancyDto;
+import com.sb1.exceptions.RetryableException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,10 @@ public class HhClient {
     public HhClient() {
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.hh.ru")
+                .codecs(configurer ->
+                        configurer.defaultCodecs()
+                                .maxInMemorySize(2 * 1024 * 1024)
+                )
                 .defaultHeader("User-Agent", "hh-microservice")
                 .build();
     }
@@ -58,8 +63,7 @@ public class HhClient {
         return allVacancies;
     }
 
-    @Retry(name = "hhApi")
-    @CircuitBreaker(name = "hhApi", fallbackMethod = "fallbackVacancy")
+    @CircuitBreaker(name = "hhApi")
     public HhVacancyDetailDto getVacancyById(String vacancyId) {
 
         return webClient.get()
@@ -67,12 +71,11 @@ public class HhClient {
                         .path("/vacancies/{id}")
                         .build(vacancyId))
                 .retrieve()
+                .onStatus(status -> status.is5xxServerError(),
+                        response -> Mono.error(new RetryableException("HH 5xx error")))
+                .onStatus(status -> status.is4xxClientError(),
+                        response -> Mono.error(new RetryableException("HH 4xx error")))
                 .bodyToMono(HhVacancyDetailDto.class)
                 .block();
-    }
-
-    public HhVacancyDetailDto fallbackVacancy(String vacancyId, Throwable ex) {
-        log.warn("HH API unavailable for vacancy {}", vacancyId);
-        return null;
     }
 }

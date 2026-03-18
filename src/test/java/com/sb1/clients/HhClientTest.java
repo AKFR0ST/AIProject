@@ -104,11 +104,4 @@ class HhClientTest {
         assertEquals("123", result.getId());
     }
 
-    @Test
-    void fallbackVacancy_shouldReturnNull() {
-
-        HhVacancyDetailDto result = hhClient.fallbackVacancy("123", new RuntimeException());
-
-        assertNull(result);
-    }
 }

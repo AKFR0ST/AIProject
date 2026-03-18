@@ -109,32 +109,16 @@ public class VacancyService {
         HhVacancyDetailDto detail = hhClient.getVacancyById(vacancy.getHhId());
 
         if (Objects.isNull(detail)) {
-            kafkaTemplate.send("topic-detailed", vacancy.getId())
-                    .whenComplete((result, ex) -> {
-                        if (Objects.isNull(ex)) {
-                            log.info(KafkaTopicsConstants.SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), DETAILED, "topic-detailed");
-                        } else {
-                            log.error(KafkaTopicsConstants.FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-detailed", ex);
-                        }
-                    });
+            throw new RuntimeException(VacancyServiceConstants.TEMPORARY_HH_FAILURE_WHEN_DETAILING_VACANCY_WITH_ID + id);
         }
-        else {
 
-            vacancyMapper.updateFromDetail(detail, vacancy);
-            vacancy.setStatus(DETAILED);
-            vacancyRepository.save(vacancy);
+        vacancyMapper.updateFromDetail(detail, vacancy);
+        vacancy.setStatus(DETAILED);
+        vacancyRepository.save(vacancy);
 
-            log.info(VacancyServiceConstants.VACANCY_WITH_ID_DETAILED, vacancy.getId(), vacancy.getName());
+        log.info(VacancyServiceConstants.VACANCY_WITH_ID_DETAILED, vacancy.getId(), vacancy.getName());
 
-            kafkaTemplate.send("topic-scoring", vacancy.getId())
-                    .whenComplete((result, ex) -> {
-                        if (Objects.isNull(ex)) {
-                            log.info(KafkaTopicsConstants.SUCCESS_TO_SEND_MESSAGE_ABOUT_VACANCY_WITH_ID_AND_STATUS_TO_TOPIC, vacancy.getId(), DETAILED, "topic-scoring");
-                        } else {
-                            log.error(KafkaTopicsConstants.FAILED_TO_SEND_MESSAGE_FOR_VACANCY_TO_TOPIC, vacancy.getId(), "topic-scoring", ex);
-                        }
-                    });
-        }
+        kafkaTemplate.send("topic-scoring", vacancy.getId());
     }
 
     public void createCoverLetter(Long id) {
