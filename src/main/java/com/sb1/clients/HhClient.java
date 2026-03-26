@@ -31,7 +31,7 @@ public class HhClient {
                 .build();
     }
 
-    public List<HhVacancyDto> searchAllVacancies(String text, int codeOfRole, String experience, String ordering, int perPage, String dateFrom) {
+    public List<HhVacancyDto> searchAllVacancies(String text, int codeOfRole, String experience, String area, String ordering, int perPage, String dateFrom) {
         List<HhVacancyDto> allVacancies = new ArrayList<>();
         int page = 0;
 
@@ -43,6 +43,7 @@ public class HhClient {
                             .queryParam("text", text)
                             .queryParam("professional_role", codeOfRole)
                             // .queryParam("experience", experience)
+                            .queryParam("area", area)  //  Default City
                             .queryParam("order_by", ordering)
                             .queryParam("per_page", perPage)
                             .queryParam("page", finalPage)

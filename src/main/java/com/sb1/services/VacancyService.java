@@ -74,7 +74,7 @@ public class VacancyService {
 
         log.info("lastCheckTime: {}", dateFrom);
 
-        List<HhVacancyDto> vacancies = hhClient.searchAllVacancies("Java разработчик", 96,  "between1And3", "publication_time", perPage, dateFrom);
+        List<HhVacancyDto> vacancies = hhClient.searchAllVacancies("Java разработчик", 96,  "between1And3", "1", "publication_time", perPage, dateFrom);
 
         lastCheckTime = OffsetDateTime.now();
 

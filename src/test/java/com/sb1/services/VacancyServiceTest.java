@@ -70,7 +70,7 @@ class VacancyServiceTest {
         Vacancy vacancy = new Vacancy();
         vacancy.setId(1L);
 
-        when(hhClient.searchAllVacancies(any(), anyInt(), any(), any(), anyInt(), any()))
+        when(hhClient.searchAllVacancies(any(), anyInt(), any(), any(), any(), anyInt(), any()))
                 .thenReturn(List.of(dto));
 
         when(vacancyRepository.existsByHhId("123"))

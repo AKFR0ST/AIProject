@@ -74,6 +74,7 @@ class HhClientTest {
                 "Java",
                 96,
                 "between1And3",
+                "1",
                 "publication_time",
                 10,
                 "2024-01-01"
